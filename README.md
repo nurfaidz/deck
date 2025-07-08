@@ -1,0 +1,1 @@
+Deck — An admin dashboard for managing a cafe point-of-sale (POS) system, built with Gin (Go) on the backend and React on the frontend. Designed to streamline menu management and enhance operational efficiency.
