@@ -31,6 +31,8 @@ func InitDB() {
 	err = DB.AutoMigrate(
 		&models.User{},
 		&models.Product{},
+		&models.Transaction{},
+		&models.TransactionDetail{},
 	)
 
 	if err != nil {

@@ -35,5 +35,8 @@ func SetupRoutes() *gin.Engine {
 	apiRouter.PUT("products/:id", middlewares.AuthMiddleware(), controllers.UpdateProduct)
 	apiRouter.DELETE("products/:id", middlewares.AuthMiddleware(), controllers.DeleteProduct)
 
+	// router transaction
+	apiRouter.GET("transactions", middlewares.AuthMiddleware(), controllers.GetTransactions)
+
 	return router
 }
