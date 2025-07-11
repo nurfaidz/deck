@@ -8,6 +8,7 @@ type TransactionDetail struct {
 	Quantity      uint        `json:"quantity" gorm:"not null"`
 	Price         uint        `json:"price" gorm:"not null"`
 	TotalPrice    uint        `json:"total_price" gorm:"not null"`
+	Notes         string      `json:"notes"`
 	Transaction   Transaction `json:"transaction" gorm:"foreignKey:TransactionId;references:Id"`
 	Product       Product     `json:"product" gorm:"foreignKey:ProductId;references:Id"`
 }
