@@ -42,4 +42,5 @@ func InitDB() {
 	fmt.Println("Successfully migrated database")
 
 	SeedUser()
+	SeedProducts()
 }
