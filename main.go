@@ -14,5 +14,5 @@ func main() {
 
 	r := routes.SetupRoutes()
 
-	r.Run(":" + os.Getenv("APP_PORT"))
+	r.Run("0.0.0.0:" + os.Getenv("APP_PORT"))
 }
