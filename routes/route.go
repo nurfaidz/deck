@@ -12,6 +12,8 @@ import (
 func SetupRoutes() *gin.Engine {
 	router := gin.Default()
 
+	router.SetTrustedProxies(nil)
+
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:  []string{"*"},
 		AllowMethods:  []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
