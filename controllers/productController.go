@@ -15,13 +15,47 @@ import (
 )
 
 func GetProducts(c *gin.Context) {
-	var products []models.Product
+	name := strings.TrimSpace(c.Query("filter[name]"))
+	category := strings.TrimSpace(c.Query("filter[category]"))
 
-	database.DB.Find(&products)
+	var products []models.Product
+	query := database.DB
+
+	if name != "" {
+		query = query.Where("LOWER(name) LIKE LOWER(?)", "%"+name+"%")
+	}
+
+	if category != "" {
+		query = query.Where("category = ?", category)
+	}
+
+	if err := query.Find(&products).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, structs.ErrorResponse{
+			Success: false,
+			Message: "Failed to fetch products",
+			Errors:  helpers.TranslateErrorMessage(err),
+		})
+
+		return
+	}
+
+	var filters []string
+	if name != "" {
+		filters = append(filters, fmt.Sprintf("Name: %s", name))
+	}
+
+	if category != "" {
+		filters = append(filters, fmt.Sprintf("category: %s", category))
+	}
+
+	message := "All products"
+	if len(filters) > 0 {
+		message = fmt.Sprintf("Products filteres by %s", strings.Join(filters, ", "))
+	}
 
 	c.JSON(http.StatusOK, structs.SuccessResponse{
 		Success: true,
-		Message: "List products data",
+		Message: message,
 		Data:    products,
 	})
 }

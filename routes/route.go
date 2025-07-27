@@ -43,11 +43,12 @@ func SetupRoutes() *gin.Engine {
 	// router product
 	apiRouter.GET("products", controllers.GetProducts)
 	apiRouter.POST("products", middlewares.AuthMiddleware(), controllers.CreateProduct)
-	apiRouter.GET("products/filter-name", controllers.FilterByName)
-	apiRouter.GET("products/filter-category", controllers.FilterByCategory)
 	apiRouter.GET("products/:id", middlewares.AuthMiddleware(), controllers.GetProductById)
 	apiRouter.PUT("products/:id", middlewares.AuthMiddleware(), controllers.UpdateProduct)
 	apiRouter.DELETE("products/:id", middlewares.AuthMiddleware(), controllers.DeleteProduct)
+
+	// route category
+	apiRouter.GET("categories", controllers.GetCategories)
 
 	// Public endpoints untuk customer
 	apiRouter.POST("transactions", transactionController.CreateTransaction)
