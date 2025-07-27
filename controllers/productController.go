@@ -6,8 +6,12 @@ import (
 	"deck/helpers"
 	"deck/models"
 	"deck/structs"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
 )
 
 func GetProducts(c *gin.Context) {
@@ -25,13 +29,65 @@ func GetProducts(c *gin.Context) {
 func CreateProduct(c *gin.Context) {
 	var req = structs.ProductCreateRequest{}
 
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBind(&req); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, structs.ErrorResponse{
 			Success: false,
 			Message: "Validation Error",
 			Errors:  helpers.TranslateErrorMessage(err),
 		})
 
+		return
+	}
+
+	file, err := c.FormFile("image")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, structs.ErrorResponse{
+			Success: false,
+			Message: "Validation Error",
+			Errors:  helpers.TranslateErrorMessage(err),
+		})
+		return
+	}
+
+	if file.Size > 1<<20 { // 1MB
+		c.JSON(http.StatusBadRequest, structs.ErrorResponse{
+			Success: false,
+			Message: "Validation error",
+			Errors:  map[string]string{"image": "Image size must be less than 1MB"},
+		})
+		return
+	}
+
+	ext := strings.ToLower(filepath.Ext(file.Filename))
+	if ext != ".jpg" && ext != ".jpeg" && ext != ".png" {
+		c.JSON(http.StatusBadRequest, structs.ErrorResponse{
+			Success: false,
+			Message: "Validation error",
+			Errors:  map[string]string{"image": "Image must be a JPG, JPEG, or PNG file"},
+		})
+
+		return
+	}
+
+	uploadDir := "uploads"
+	if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
+		if err := os.MkdirAll(uploadDir, os.ModePerm); err != nil {
+			c.JSON(http.StatusInternalServerError, structs.ErrorResponse{
+				Success: false,
+				Message: "Failed to create upload directory",
+				Errors:  map[string]string{"image": "Failed to create upload folder"},
+			})
+			return
+		}
+	}
+
+	imagePath := filepath.Join(uploadDir, file.Filename)
+	if err := c.SaveUploadedFile(file, imagePath); err != nil {
+		c.JSON(http.StatusInternalServerError, structs.ErrorResponse{
+			Success: false,
+			Message: "Failed to upload image",
+			Errors:  map[string]string{"image": "Failed to save uploaded image"},
+		})
 		return
 	}
 
@@ -51,7 +107,6 @@ func CreateProduct(c *gin.Context) {
 		c.JSON(http.StatusUnprocessableEntity, structs.ErrorResponse{
 			Success: false,
 			Message: "Invalid category type",
-			Errors:  map[string]string{"category": "Category must be one of the following: classic, sparkling, smoothies, tea, powders, ice_cream, other"},
 		})
 
 		return
@@ -63,7 +118,7 @@ func CreateProduct(c *gin.Context) {
 		Category:    req.Category,
 		Description: req.Description,
 		IsAvailable: req.IsAvailable,
-		Image:       req.Image,
+		Image:       file.Filename,
 	}
 
 	if err := database.DB.Create(&product).Error; err != nil {
@@ -169,7 +224,6 @@ func UpdateProduct(c *gin.Context) {
 			c.JSON(http.StatusUnprocessableEntity, structs.ErrorResponse{
 				Success: false,
 				Message: "Invalid category type",
-				Errors:  map[string]string{"category": "Category must be one of the following: classic, sparkling, smoothies, tea, powders, ice_cream, other"},
 			})
 			return
 		}
@@ -179,7 +233,6 @@ func UpdateProduct(c *gin.Context) {
 	product.Price = req.Price
 	product.Category = req.Category
 	product.Description = req.Description
-	product.Image = req.Image
 	product.IsAvailable = req.IsAvailable
 
 	if err := database.DB.Save(&product).Error; err != nil {
@@ -236,5 +289,66 @@ func DeleteProduct(c *gin.Context) {
 	c.JSON(http.StatusOK, structs.SuccessResponse{
 		Success: true,
 		Message: "Product deleted successfully",
+	})
+}
+
+func FilterByName(c *gin.Context) {
+	name := c.Query("name")
+	var products []models.Product
+
+	if name != "" {
+		if err := database.DB.Where("LOWER(name) LIKE LOWER(?)", "%"+strings.TrimSpace(name)+"%").Find(&products).Error; err != nil {
+			c.JSON(http.StatusNotFound, structs.ErrorResponse{
+				Success: false,
+				Message: "No products found",
+				Errors:  helpers.TranslateErrorMessage(err),
+			})
+
+			return
+		}
+	} else {
+		database.DB.Find(&products)
+	}
+
+	message := "All products"
+	if name != "" {
+		message = fmt.Sprintf("Filtered products by name: %s", name)
+	}
+
+	c.JSON(http.StatusOK, structs.SuccessResponse{
+		Success: true,
+		Message: message,
+		Data:    products,
+	})
+}
+
+func FilterByCategory(c *gin.Context) {
+	category := c.Query("category")
+	var products []models.Product
+
+	query := database.DB
+
+	if category != "" {
+		query = query.Where("category = ?", category)
+	}
+
+	if err := query.Find(&products).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, structs.ErrorResponse{
+			Success: false,
+			Message: "Failed to fetch products",
+			Errors:  helpers.TranslateErrorMessage(err),
+		})
+		return
+	}
+
+	message := "All products"
+	if category != "" {
+		message = fmt.Sprintf("Products filtered by category: %s", category)
+	}
+
+	c.JSON(http.StatusOK, structs.SuccessResponse{
+		Success: true,
+		Message: message,
+		Data:    products,
 	})
 }

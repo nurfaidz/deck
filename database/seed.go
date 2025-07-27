@@ -42,7 +42,20 @@ func SeedUser() {
 
 func SeedProducts() {
 	if DB == nil {
-		fmt.Println("Error: DB is nil in SeedUser()")
+		fmt.Println("Error: DB is nil in SeedProducts()")
+		return
+	}
+
+	// Cek apakah sudah ada data products
+	var count int64
+	if err := DB.Model(&models.Product{}).Count(&count).Error; err != nil {
+		log.Printf("Error counting products: %v", err)
+		return
+	}
+
+	// Jika sudah ada data, skip seeding
+	if count > 0 {
+		log.Printf("Products already seeded (%d products found), skipping...", count)
 		return
 	}
 
@@ -84,11 +97,10 @@ func SeedProducts() {
 		},
 	}
 
-	for _, product := range products {
-		if err := DB.Create(&product).Error; err != nil {
-			log.Printf("Error creating product %s: %v", product.Name, err)
-		}
+	if err := DB.Create(&products).Error; err != nil {
+		log.Printf("Error seeding products: %v", err)
+		return
 	}
 
-	log.Println("Products seeded successfully")
+	log.Printf("Products seeded successfully (%d products created)", len(products))
 }

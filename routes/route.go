@@ -41,23 +41,25 @@ func SetupRoutes() *gin.Engine {
 	apiRouter.DELETE("users/:id", middlewares.AuthMiddleware(), controllers.DeleteUser)
 
 	// router product
-	apiRouter.GET("products", middlewares.AuthMiddleware(), controllers.GetProducts)
+	apiRouter.GET("products", controllers.GetProducts)
 	apiRouter.POST("products", middlewares.AuthMiddleware(), controllers.CreateProduct)
+	apiRouter.GET("products/filter-name", controllers.FilterByName)
+	apiRouter.GET("products/filter-category", controllers.FilterByCategory)
 	apiRouter.GET("products/:id", middlewares.AuthMiddleware(), controllers.GetProductById)
 	apiRouter.PUT("products/:id", middlewares.AuthMiddleware(), controllers.UpdateProduct)
 	apiRouter.DELETE("products/:id", middlewares.AuthMiddleware(), controllers.DeleteProduct)
 
 	// Public endpoints untuk customer
-	apiRouter.POST("transactions", transactionController.CreateTransaction)           // Create transaction
-	apiRouter.GET("transactions/:order_number", transactionController.GetTransaction) // Get transaction by order number
+	apiRouter.POST("transactions", transactionController.CreateTransaction)
+	apiRouter.GET("transactions/:order_number", transactionController.GetTransaction)
 
 	// Protected endpoints untuk admin
-	apiRouter.GET("transactions", middlewares.AuthMiddleware(), transactionController.GetAllTransactions)        // Get all transactions
-	apiRouter.GET("transactions/id/:id", middlewares.AuthMiddleware(), transactionController.GetTransactionByID) // Get transaction by ID
+	apiRouter.GET("transactions", middlewares.AuthMiddleware(), transactionController.GetAllTransactions)
+	apiRouter.GET("transactions/id/:id", middlewares.AuthMiddleware(), transactionController.GetTransactionByID)
 
 	// Payment routes
-	apiRouter.POST("payments", paymentController.CreatePayment)                     // Create payment link
-	apiRouter.POST("payments/notification", paymentController.MidtransNotification) // Midtrans webhook (no auth)
+	apiRouter.POST("payments", paymentController.CreatePayment)
+	apiRouter.POST("payments/notification", paymentController.MidtransNotification)
 	apiRouter.GET("payments/:order_number", paymentController.GetPaymentStatus)
 
 	return router

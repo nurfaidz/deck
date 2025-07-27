@@ -16,19 +16,17 @@ type ProductResponse struct {
 }
 
 type ProductCreateRequest struct {
-	Name        string             `json:"name" binding:"required" gorm:"not null"`
-	Price       uint               `json:"price" binding:"required" gorm:"not null"`
-	Category    enums.CategoryType `json:"category" binding:"required,oneof=classic sparkling smoothies tea powders ice_cream other" gorm:"not null"`
-	Description string             `json:"description"`
-	Image       string             `json:"image" gorm:"type:varchar(255)"`
-	IsAvailable bool               `json:"is_available" binding:"required" gorm:"not null"`
+	Name        string             `form:"name" binding:"required" gorm:"not null"`
+	Price       uint               `form:"price" binding:"required" gorm:"not null"`
+	Category    enums.CategoryType `form:"category" binding:"required,oneof=classic sparkling smoothies tea powders ice_cream other" gorm:"not null"`
+	Description string             `form:"description"`
+	IsAvailable bool               `form:"is_available" binding:"required" gorm:"not null"`
 }
 
 type ProductUpdateRequest struct {
-	Name        string             `json:"name" binding:"required" gorm:"not null"`
-	Price       uint               `json:"price" binding:"required" gorm:"not null"`
-	Category    enums.CategoryType `json:"category" binding:"required" gorm:"not null"`
-	Description string             `json:"description"`
-	Image       string             `json:"image" gorm:"type:varchar(255)"`
-	IsAvailable bool               `json:"is_available"`
+	Name        string             `form:"name" binding:"required" gorm:"not null"`
+	Price       uint               `form:"price" binding:"required" gorm:"not null"`
+	Category    enums.CategoryType `form:"category" binding:"required" gorm:"not null"`
+	Description string             `form:"description"`
+	IsAvailable bool               `form:"is_available"`
 }

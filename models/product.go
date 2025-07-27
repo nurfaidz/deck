@@ -9,5 +9,5 @@ type Product struct {
 	Description string             `json:"description" gorm:"type:text"`
 	Image       string             `json:"image" gorm:"type:varchar(255)"`
 	Price       uint               `json:"price" gorm:"not null"`
-	IsAvailable bool               `json:"is_available" gorm:"not null"`
+	IsAvailable bool               `json:"is_available" gorm:"not null;default:true"`
 }

@@ -32,3 +32,15 @@ func (c CategoryType) GetDisplayName() string {
 		return string(c)
 	}
 }
+
+func GetAllCategories() []CategoryType {
+	return []CategoryType{
+		Classic,
+		Sparkling,
+		Smoothies,
+		Tea,
+		Powders,
+		IceCream,
+		Other,
+	}
+}

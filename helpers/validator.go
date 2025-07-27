@@ -26,6 +26,9 @@ func TranslateErrorMessage(err error) map[string]string {
 				errorsMap[field] = fmt.Sprintf("%s must be at most %s character", field, fieldError.Param())
 			case "numeric":
 				errorsMap[field] = fmt.Sprintf("%s must be numeric", field)
+			case "oneof":
+				options := strings.Split(fieldError.Param(), ",")
+				errorsMap[field] = fmt.Sprintf("%s must be one of the following: %s", field, strings.Join(options, ", "))
 			default:
 				errorsMap[field] = "Invalid value"
 
@@ -34,6 +37,11 @@ func TranslateErrorMessage(err error) map[string]string {
 	}
 
 	if err != nil {
+		// file is not found
+		if strings.Contains(err.Error(), "http: no such file") || strings.Contains(err.Error(), "missing file") {
+			errorsMap["image"] = "Image file is required"
+		}
+
 		if strings.Contains(err.Error(), "Duplicate entry") {
 			if strings.Contains(err.Error(), "username") {
 				errorsMap["username"] = "Username already exists"
