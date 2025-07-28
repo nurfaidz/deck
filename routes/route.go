@@ -23,11 +23,9 @@ func SetupRoutes() *gin.Engine {
 
 	// Initialize services
 	transactionService := services.NewTransactionService(database.DB)
-	midtransService := services.NewMidtransService()
 
 	// Initialize controllers
 	transactionController := controllers.NewTransactionController(database.DB, transactionService)
-	paymentController := controllers.NewPaymentController(database.DB, midtransService)
 
 	apiRouter := router.Group("/api/")
 
