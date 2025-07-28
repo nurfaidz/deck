@@ -57,29 +57,6 @@ func (tc *TransactionController) CreateTransaction(c *gin.Context) {
 	})
 }
 
-// GetTransaction - Get transaction by order number
-func (tc *TransactionController) GetTransaction(c *gin.Context) {
-	orderNumber := c.Param("order_number")
-
-	transaction, err := tc.transactionService.GetTransaction(orderNumber)
-	if err != nil {
-		c.JSON(http.StatusNotFound, structs.ErrorResponse{
-			Success: false,
-			Message: "Transaction not found",
-			Errors:  helpers.TranslateErrorMessage(err),
-		})
-		return
-	}
-
-	response := tc.toTransactionResponse(transaction)
-
-	c.JSON(http.StatusOK, structs.SuccessResponse{
-		Success: true,
-		Message: "Transaction retrieved successfully",
-		Data:    response,
-	})
-}
-
 // GetTransactionByID - Get transaction by ID
 func (tc *TransactionController) GetTransactionByID(c *gin.Context) {
 	idStr := c.Param("id")
@@ -112,7 +89,7 @@ func (tc *TransactionController) GetTransactionByID(c *gin.Context) {
 	})
 }
 
-// GetAllTransactions - Get all transactions (untuk admin)
+// GetAllTransactions - Get all transactions
 func (tc *TransactionController) GetAllTransactions(c *gin.Context) {
 	transactions, err := tc.transactionService.GetAllTransactions()
 	if err != nil {

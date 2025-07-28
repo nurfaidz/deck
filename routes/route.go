@@ -50,18 +50,11 @@ func SetupRoutes() *gin.Engine {
 	// route category
 	apiRouter.GET("categories", controllers.GetCategories)
 
-	// Public endpoints untuk customer
+	// route transaction
 	apiRouter.POST("transactions", transactionController.CreateTransaction)
-	apiRouter.GET("transactions/:order_number", transactionController.GetTransaction)
-
-	// Protected endpoints untuk admin
+	//apiRouter.GET("transactions/:order_number", transactionController.GetTransaction)
 	apiRouter.GET("transactions", middlewares.AuthMiddleware(), transactionController.GetAllTransactions)
-	apiRouter.GET("transactions/id/:id", middlewares.AuthMiddleware(), transactionController.GetTransactionByID)
-
-	// Payment routes
-	apiRouter.POST("payments", paymentController.CreatePayment)
-	apiRouter.POST("payments/notification", paymentController.MidtransNotification)
-	apiRouter.GET("payments/:order_number", paymentController.GetPaymentStatus)
+	apiRouter.GET("transactions/:id", transactionController.GetTransactionByID)
 
 	return router
 }
