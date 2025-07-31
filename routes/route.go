@@ -23,9 +23,11 @@ func SetupRoutes() *gin.Engine {
 
 	// Initialize services
 	transactionService := services.NewTransactionService(database.DB)
+	notificationService := services.NewNotificationService(database.DB)
 
 	// Initialize controllers
-	transactionController := controllers.NewTransactionController(database.DB, transactionService)
+	transactionController := controllers.NewTransactionController(database.DB, transactionService, notificationService)
+	notificationController := controllers.NewNotificationController(notificationService)
 
 	apiRouter := router.Group("/api/")
 
@@ -53,6 +55,11 @@ func SetupRoutes() *gin.Engine {
 	//apiRouter.GET("transactions/:order_number", transactionController.GetTransaction)
 	apiRouter.GET("transactions", middlewares.AuthMiddleware(), transactionController.GetAllTransactions)
 	apiRouter.GET("transactions/:id", transactionController.GetTransactionByID)
+
+	apiRouter.GET("notifications", middlewares.AuthMiddleware(), notificationController.GetNotifications)
+	apiRouter.GET("notifications/unread-count", middlewares.AuthMiddleware(), notificationController.GetUnreadCount)
+	apiRouter.PUT("notifications/:id/read", middlewares.AuthMiddleware(), notificationController.MarkAsRead)
+	apiRouter.PUT("notifications/mark-all-read", middlewares.AuthMiddleware(), notificationController.MarkAllAsRead)
 
 	return router
 }

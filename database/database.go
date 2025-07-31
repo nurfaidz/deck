@@ -33,6 +33,7 @@ func InitDB() {
 		&models.Product{},
 		&models.Transaction{},
 		&models.TransactionDetail{},
+		&models.Notification{},
 	)
 
 	if err != nil {

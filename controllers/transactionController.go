@@ -5,6 +5,7 @@ import (
 	"deck/models"
 	"deck/services"
 	"deck/structs"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -13,14 +14,16 @@ import (
 )
 
 type TransactionController struct {
-	db                 *gorm.DB
-	transactionService *services.TransactionService
+	db                  *gorm.DB
+	transactionService  *services.TransactionService
+	notificationService *services.NotificationService
 }
 
-func NewTransactionController(db *gorm.DB, transactionService *services.TransactionService) *TransactionController {
+func NewTransactionController(db *gorm.DB, transactionService *services.TransactionService, notificationService *services.NotificationService) *TransactionController {
 	return &TransactionController{
-		db:                 db,
-		transactionService: transactionService,
+		db:                  db,
+		transactionService:  transactionService,
+		notificationService: notificationService,
 	}
 }
 
@@ -46,6 +49,33 @@ func (tc *TransactionController) CreateTransaction(c *gin.Context) {
 		})
 		return
 	}
+
+	// Broadcast notification to admin
+	go func() {
+		notificationData := map[string]interface{}{
+			"transaction_id": transaction.Id,
+			"buyer_name":     transaction.BuyerName,
+			"amount":         transaction.TotalAmount,
+			"order_type":     "new_order",
+			"products":       transaction.TransactionDetails,
+		}
+
+		title := "Pesanan Baru"
+		message := fmt.Sprintf("Ada pesanan baru dari %s dengan total Rp %s",
+			transaction.BuyerName,
+			helpers.FormatCurrency(transaction.TotalAmount))
+
+		err := tc.notificationService.BroadcastToAdmins(
+			"new_transaction",
+			title,
+			message,
+			notificationData,
+		)
+
+		if err != nil {
+			fmt.Printf("Failed to broadcast notification: %v\n", err)
+		}
+	}()
 
 	// Convert to response
 	response := tc.toTransactionResponse(transaction)
