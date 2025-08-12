@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"os"
 	"path/filepath"
 	"strings"
 )
@@ -104,17 +103,6 @@ func CreateProduct(c *gin.Context) {
 	}
 
 	uploadDir := "uploads"
-	if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
-		if err := os.MkdirAll(uploadDir, os.ModePerm); err != nil {
-			c.JSON(http.StatusInternalServerError, structs.ErrorResponse{
-				Success: false,
-				Message: "Failed to create upload directory",
-				Errors:  map[string]string{"image": "Failed to create upload folder"},
-			})
-			return
-		}
-	}
-
 	imagePath := filepath.Join(uploadDir, file.Filename)
 	if err := c.SaveUploadedFile(file, imagePath); err != nil {
 		c.JSON(http.StatusInternalServerError, structs.ErrorResponse{
