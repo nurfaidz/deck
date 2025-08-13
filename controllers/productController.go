@@ -103,7 +103,9 @@ func CreateProduct(c *gin.Context) {
 	}
 
 	uploadDir := "uploads"
-	imagePath := filepath.Join(uploadDir, file.Filename)
+
+	newFileName := helpers.GenerateUniqueFilename(file)
+	imagePath := filepath.Join(uploadDir, newFileName)
 	if err := c.SaveUploadedFile(file, imagePath); err != nil {
 		c.JSON(http.StatusInternalServerError, structs.ErrorResponse{
 			Success: false,
