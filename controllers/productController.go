@@ -8,7 +8,9 @@ import (
 	"deck/structs"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -104,9 +106,51 @@ func CreateProduct(c *gin.Context) {
 
 	uploadDir := "uploads"
 
+	if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
+		log.Printf("INFO: Upload directory doesn't exist, creating: %s", uploadDir)
+		if err := os.MkdirAll(uploadDir, 0755); err != nil {
+			log.Printf("ERROR: Failed to create upload directory: %v", err)
+			c.JSON(http.StatusInternalServerError, structs.ErrorResponse{
+				Success: false,
+				Message: "Failed to create upload directory",
+				Errors:  map[string]string{"image": "Failed to create upload directory"},
+			})
+
+			return
+		}
+	}
+
+	// check directory permissions
+
+	if info, err := os.Stat(uploadDir); err != nil {
+		log.Printf("ERROR: Failed to stat upload directory: %v", err)
+	} else {
+		log.Printf("INFO: Upload directory permissions: %s", info.Mode().Perm())
+	}
+
 	newFileName := helpers.GenerateUniqueFilename(file)
 	imagePath := filepath.Join(uploadDir, newFileName)
+
+	log.Printf("INFO: Saving uploaded file to %s", imagePath)
+	log.Printf("INFO: Current working directory: %s", helpers.GetCurrentWorkingDir())
+	log.Printf("INFO: Absolute path of upload directory: %s", helpers.GetAbsolutePath(uploadDir))
+
 	if err := c.SaveUploadedFile(file, imagePath); err != nil {
+		log.Printf("ERROR: Failed to save uploaded file: %v", err)
+		log.Printf("ERROR: File path: %s", imagePath)
+		log.Printf("ERROR: File name: %s", newFileName)
+
+		// debugging if we can write to the directory
+		testFile := filepath.Join(uploadDir, "test.txt")
+		if testErr := os.WriteFile(testFile, []byte("test"), 0644); testErr != nil {
+			log.Printf("ERROR: Failed to write to upload directory: %v", testErr)
+		} else {
+			log.Printf("INFO: Successfully created test file, removing it")
+			os.Remove(testFile)
+		}
+
+		log.Printf("INFO: Successfully saved file: %s", imagePath)
+
 		c.JSON(http.StatusInternalServerError, structs.ErrorResponse{
 			Success: false,
 			Message: "Failed to upload image",
@@ -142,7 +186,7 @@ func CreateProduct(c *gin.Context) {
 		Category:    req.Category,
 		Description: req.Description,
 		IsAvailable: req.IsAvailable,
-		Image:       file.Filename,
+		Image:       newFileName,
 	}
 
 	if err := database.DB.Create(&product).Error; err != nil {
