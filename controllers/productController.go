@@ -259,25 +259,25 @@ func UpdateProduct(c *gin.Context) {
 			Message: "Product not found",
 			Errors:  helpers.TranslateErrorMessage(err),
 		})
-
 		return
 	}
 
 	var req = structs.ProductUpdateRequest{}
 
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBind(&req); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, structs.ErrorResponse{
 			Success: false,
 			Message: "Validation error",
 			Errors:  helpers.TranslateErrorMessage(err),
 		})
-
 		return
 	}
 
+	// Validate category if provided
 	if req.Category != "" {
 		validCategories := []enums.CategoryType{
-			enums.Classic, enums.Sparkling, enums.Smoothies, enums.Tea, enums.IceCream, enums.Powders, enums.Other,
+			enums.Classic, enums.Sparkling, enums.Smoothies,
+			enums.Tea, enums.IceCream, enums.Powders, enums.Other,
 		}
 
 		isValidCategory := false
@@ -308,7 +308,6 @@ func UpdateProduct(c *gin.Context) {
 			Success: false,
 			Message: "Failed to update product",
 		})
-
 		return
 	}
 
