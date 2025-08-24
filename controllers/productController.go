@@ -107,9 +107,7 @@ func CreateProduct(c *gin.Context) {
 	uploadDir := "uploads"
 
 	if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
-		log.Printf("INFO: Upload directory doesn't exist, creating: %s", uploadDir)
 		if err := os.MkdirAll(uploadDir, 0755); err != nil {
-			log.Printf("ERROR: Failed to create upload directory: %v", err)
 			c.JSON(http.StatusInternalServerError, structs.ErrorResponse{
 				Success: false,
 				Message: "Failed to create upload directory",
@@ -121,7 +119,6 @@ func CreateProduct(c *gin.Context) {
 	}
 
 	// check directory permissions
-
 	if info, err := os.Stat(uploadDir); err != nil {
 		log.Printf("ERROR: Failed to stat upload directory: %v", err)
 	} else {
@@ -131,26 +128,7 @@ func CreateProduct(c *gin.Context) {
 	newFileName := helpers.GenerateUniqueFilename(file)
 	imagePath := filepath.Join(uploadDir, newFileName)
 
-	log.Printf("INFO: Saving uploaded file to %s", imagePath)
-	log.Printf("INFO: Current working directory: %s", helpers.GetCurrentWorkingDir())
-	log.Printf("INFO: Absolute path of upload directory: %s", helpers.GetAbsolutePath(uploadDir))
-
 	if err := c.SaveUploadedFile(file, imagePath); err != nil {
-		log.Printf("ERROR: Failed to save uploaded file: %v", err)
-		log.Printf("ERROR: File path: %s", imagePath)
-		log.Printf("ERROR: File name: %s", newFileName)
-
-		// debugging if we can write to the directory
-		testFile := filepath.Join(uploadDir, "test.txt")
-		if testErr := os.WriteFile(testFile, []byte("test"), 0644); testErr != nil {
-			log.Printf("ERROR: Failed to write to upload directory: %v", testErr)
-		} else {
-			log.Printf("INFO: Successfully created test file, removing it")
-			os.Remove(testFile)
-		}
-
-		log.Printf("INFO: Successfully saved file: %s", imagePath)
-
 		c.JSON(http.StatusInternalServerError, structs.ErrorResponse{
 			Success: false,
 			Message: "Failed to upload image",
@@ -297,18 +275,85 @@ func UpdateProduct(c *gin.Context) {
 		}
 	}
 
+	var newFileName string
+	var shouldUpdateImage bool
+
+	file, err := c.FormFile("image")
+	if err == nil {
+		if file.Size > 1<<20 { // 1MB
+			c.JSON(http.StatusBadRequest, structs.ErrorResponse{
+				Success: false,
+				Message: "Validation error",
+				Errors:  map[string]string{"image": "Image size must be less than 1MB"},
+			})
+			return
+		}
+
+		ext := strings.ToLower(filepath.Ext(file.Filename))
+		if ext != ".jpg" && ext != ".jpeg" && ext != ".png" {
+			c.JSON(http.StatusBadRequest, structs.ErrorResponse{
+				Success: false,
+				Message: "Validation error",
+				Errors:  map[string]string{"image": "Image must be a JPG, JPEG, or PNG file"},
+			})
+			return
+		}
+
+		newFileName = helpers.GenerateUniqueFilename(file)
+		uploadDir := "uploads"
+		imagePath := filepath.Join(uploadDir, newFileName)
+
+		if err := c.SaveUploadedFile(file, imagePath); err != nil {
+			c.JSON(http.StatusInternalServerError, structs.ErrorResponse{
+				Success: false,
+				Message: "Failed to upload image",
+				Errors:  map[string]string{"image": "Failed to save uploaded image"},
+			})
+			return
+		}
+
+		shouldUpdateImage = true
+	} else if err.Error() != "http: no such file" {
+		c.JSON(http.StatusBadRequest, structs.ErrorResponse{
+			Success: false,
+			Message: "Image upload error",
+			Errors:  helpers.TranslateErrorMessage(err),
+		})
+		return
+	}
+
+	// Store old image for cleanup
+	oldImage := product.Image
+
 	product.Name = req.Name
 	product.Price = req.Price
 	product.Category = req.Category
 	product.Description = req.Description
 	product.IsAvailable = req.IsAvailable
 
+	if shouldUpdateImage {
+		product.Image = newFileName
+	}
+
 	if err := database.DB.Save(&product).Error; err != nil {
+		if shouldUpdateImage {
+			os.Remove(filepath.Join("uploads", newFileName))
+		}
+
 		c.JSON(http.StatusInternalServerError, structs.ErrorResponse{
 			Success: false,
 			Message: "Failed to update product",
 		})
 		return
+	}
+
+	if shouldUpdateImage && oldImage != "" {
+		go func() {
+			oldPath := filepath.Join("uploads", oldImage)
+			if err := os.Remove(oldPath); err != nil {
+				log.Printf("Warning: Failed to delete old image %s: %v", oldPath, err)
+			}
+		}()
 	}
 
 	c.JSON(http.StatusOK, structs.SuccessResponse{

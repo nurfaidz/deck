@@ -17,27 +17,22 @@ func SeedUser() {
 
 	var user models.User
 
-	result := DB.First(&user, "username = ?", "admin")
-	if result.RowsAffected > 0 {
-		fmt.Println("User already exists")
-
-		return
-	}
-
-	hashedPassword := helpers.HashPassword("password")
-
-	user = models.User{
+	result := DB.Where("Username = ?", "admin").FirstOrCreate(&user, models.User{
 		Username: "admin",
 		Email:    "admin@gmail.com",
-		Password: hashedPassword,
-	}
+		Password: helpers.HashPassword("password"),
+	})
 
-	if err := DB.Create(&user).Error; err != nil {
-		fmt.Println("Failed to create admin user:", err)
+	if result.Error != nil {
+		fmt.Println("Failed to create admin user:", result.Error)
 		return
 	}
 
-	fmt.Println("Successfully seeded admin user")
+	if result.RowsAffected > 0 {
+		fmt.Println("Successfully created admin user")
+	} else {
+		fmt.Println("Admin user already exists")
+	}
 }
 
 func SeedProducts() {
@@ -46,20 +41,7 @@ func SeedProducts() {
 		return
 	}
 
-	// Cek apakah sudah ada data products
-	var count int64
-	if err := DB.Model(&models.Product{}).Count(&count).Error; err != nil {
-		log.Printf("Error counting products: %v", err)
-		return
-	}
-
-	// Jika sudah ada data, skip seeding
-	if count > 0 {
-		log.Printf("Products already seeded (%d products found), skipping...", count)
-		return
-	}
-
-	var products = []models.Product{
+	productsToSeed := []models.Product{
 		{
 			Name:        "Kopi Lampung",
 			Category:    enums.Classic,
@@ -88,19 +70,30 @@ func SeedProducts() {
 			Price:       20000,
 			IsAvailable: true,
 		},
-		{
-			Name:        "Es Krim Lemon",
-			Category:    enums.IceCream,
-			Description: "Es Krim Lemon adalah es krim segar dengan rasa lemon yang asam manis. Cocok untuk menyegarkan hari yang panas.",
-			Price:       20000,
-			IsAvailable: true,
-		},
 	}
 
-	if err := DB.Create(&products).Error; err != nil {
-		log.Printf("Error seeding products: %v", err)
-		return
-	}
+	var createdCount int
+	var existingCount int
 
-	log.Printf("Products seeded successfully (%d products created)", len(products))
+	for _, productData := range productsToSeed {
+		var product models.Product
+
+		result := DB.Where("Name = ?", productData.Name).FirstOrCreate(&product, productData)
+
+		if result.Error != nil {
+			log.Printf("Error creating/finding product '%s': %v", productData.Name, result.Error)
+			continue
+		}
+
+		if result.RowsAffected > 0 {
+			createdCount++
+			log.Printf("Created product: %s", productData.Name)
+		} else {
+			existingCount++
+			log.Printf("Product already exists: %s", productData.Name)
+		}
+
+		log.Printf("Product seeding completed - Created: %d, Existing: %d, Total: %d",
+			createdCount, existingCount, len(productsToSeed))
+	}
 }
