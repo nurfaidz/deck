@@ -12,6 +12,8 @@ import (
 func SetupRoutes() *gin.Engine {
 	router := gin.Default()
 
+	router.Static("/uploads", "./uploads")
+
 	router.SetTrustedProxies(nil)
 
 	router.Use(cors.New(cors.Config{
@@ -24,9 +26,10 @@ func SetupRoutes() *gin.Engine {
 	// Initialize services
 	transactionService := services.NewTransactionService(database.DB)
 	notificationService := services.NewNotificationService(database.DB)
+	midtransService := services.NewMidtransService()
 
 	// Initialize controllers
-	transactionController := controllers.NewTransactionController(database.DB, transactionService, notificationService)
+	transactionController := controllers.NewTransactionController(database.DB, transactionService, notificationService, midtransService)
 	notificationController := controllers.NewNotificationController(notificationService)
 
 	apiRouter := router.Group("/api/")
