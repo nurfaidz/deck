@@ -143,7 +143,7 @@ func (tc *TransactionController) GetAllTransactions(c *gin.Context) {
 	})
 }
 
-// Helper method to convert model to response
+// Convert model to response
 func (tc *TransactionController) toTransactionResponse(transaction *models.Transaction) *structs.TransactionResponse {
 	var details []structs.TransactionDetailResponse
 	for _, detail := range transaction.TransactionDetails {

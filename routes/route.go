@@ -26,11 +26,12 @@ func SetupRoutes() *gin.Engine {
 	// Initialize services
 	transactionService := services.NewTransactionService(database.DB)
 	notificationService := services.NewNotificationService(database.DB)
-	midtransService := services.NewMidtransService()
+	productService := services.NewProductService(database.DB)
 
 	// Initialize controllers
-	transactionController := controllers.NewTransactionController(database.DB, transactionService, notificationService, midtransService)
+	transactionController := controllers.NewTransactionController(database.DB, transactionService, notificationService)
 	notificationController := controllers.NewNotificationController(notificationService)
+	productController := controllers.NewProductController(productService)
 
 	apiRouter := router.Group("/api/")
 
@@ -44,11 +45,11 @@ func SetupRoutes() *gin.Engine {
 	apiRouter.DELETE("users/:id", middlewares.AuthMiddleware(), controllers.DeleteUser)
 
 	// router product
-	apiRouter.GET("products", controllers.GetProducts)
-	apiRouter.POST("products", middlewares.AuthMiddleware(), controllers.CreateProduct)
-	apiRouter.GET("products/:id", middlewares.AuthMiddleware(), controllers.GetProductById)
+	apiRouter.GET("products", productController.GetProducts)
+	apiRouter.POST("products", middlewares.AuthMiddleware(), productController.CreateProduct)
+	apiRouter.GET("products/:id", middlewares.AuthMiddleware(), productController.GetProductById)
 	apiRouter.PUT("products/:id", middlewares.AuthMiddleware(), controllers.UpdateProduct)
-	apiRouter.DELETE("products/:id", middlewares.AuthMiddleware(), controllers.DeleteProduct)
+	apiRouter.DELETE("products/:id", middlewares.AuthMiddleware(), productController.DeleteProduct)
 
 	// route category
 	apiRouter.GET("categories", controllers.GetCategories)
