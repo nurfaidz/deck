@@ -3,13 +3,19 @@ package enums
 type CategoryType string
 
 const (
-	Classic   CategoryType = "classic"
-	Sparkling CategoryType = "sparkling"
-	Smoothies CategoryType = "smoothies"
-	Tea       CategoryType = "tea"
-	Powders   CategoryType = "powders"
-	IceCream  CategoryType = "ice_cream"
-	Other     CategoryType = "other"
+	Classic    CategoryType = "classic"
+	Sparkling  CategoryType = "sparkling"
+	Smoothies  CategoryType = "smoothies"
+	Tea        CategoryType = "tea"
+	Powders    CategoryType = "powders"
+	IceCream   CategoryType = "ice_cream"
+	Appetizers CategoryType = "appetizers"
+	MainCourse CategoryType = "main_course"
+	Desserts   CategoryType = "desserts"
+	Snacks     CategoryType = "snacks"
+	Food       CategoryType = "food"
+	Pastry     CategoryType = "pastry"
+	Other      CategoryType = "other"
 )
 
 func (c CategoryType) GetDisplayName() string {
@@ -28,6 +34,18 @@ func (c CategoryType) GetDisplayName() string {
 		return "IceCream"
 	case Other:
 		return "Other"
+	case Appetizers:
+		return "Appetizers"
+	case MainCourse:
+		return "Main Course"
+	case Desserts:
+		return "Desserts"
+	case Snacks:
+		return "Snacks"
+	case Food:
+		return "Food"
+	case Pastry:
+		return "Pastry"
 	default:
 		return string(c)
 	}
@@ -41,6 +59,12 @@ func GetAllCategories() []CategoryType {
 		Tea,
 		Powders,
 		IceCream,
+		Appetizers,
+		MainCourse,
+		Desserts,
+		Snacks,
+		Food,
+		Pastry,
 		Other,
 	}
 }

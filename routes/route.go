@@ -27,11 +27,13 @@ func SetupRoutes() *gin.Engine {
 	transactionService := services.NewTransactionService(database.DB)
 	notificationService := services.NewNotificationService(database.DB)
 	productService := services.NewProductService(database.DB)
+	categoryService := services.NewCategoryService(database.DB)
 
 	// Initialize controllers
 	transactionController := controllers.NewTransactionController(database.DB, transactionService, notificationService)
 	notificationController := controllers.NewNotificationController(notificationService)
 	productController := controllers.NewProductController(productService)
+	categoryController := controllers.NewCategoryController(categoryService)
 
 	apiRouter := router.Group("/api/")
 
@@ -52,7 +54,8 @@ func SetupRoutes() *gin.Engine {
 	apiRouter.DELETE("products/:id", middlewares.AuthMiddleware(), productController.DeleteProduct)
 
 	// route category
-	apiRouter.GET("categories", controllers.GetCategories)
+	apiRouter.GET("categories", categoryController.GetCategories)
+	apiRouter.GET("categories/:value", categoryController.GetCategoryByValue)
 
 	// route transaction
 	apiRouter.POST("transactions", transactionController.CreateTransaction)
@@ -60,6 +63,7 @@ func SetupRoutes() *gin.Engine {
 	apiRouter.GET("transactions", middlewares.AuthMiddleware(), transactionController.GetAllTransactions)
 	apiRouter.GET("transactions/:id", transactionController.GetTransactionByID)
 
+	// route notification
 	apiRouter.GET("notifications", middlewares.AuthMiddleware(), notificationController.GetNotifications)
 	apiRouter.GET("notifications/unread-count", middlewares.AuthMiddleware(), notificationController.GetUnreadCount)
 	apiRouter.PUT("notifications/:id/read", middlewares.AuthMiddleware(), notificationController.MarkAsRead)

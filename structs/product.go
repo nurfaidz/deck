@@ -18,7 +18,7 @@ type ProductResponse struct {
 type ProductCreateRequest struct {
 	Name        string             `json:"name" form:"name" binding:"required" gorm:"not null"`
 	Price       uint               `json:"price" form:"price" binding:"required" gorm:"not null"`
-	Category    enums.CategoryType `json:"category" form:"category" binding:"required,oneof=classic sparkling smoothies tea powders ice_cream other" gorm:"not null"`
+	Category    enums.CategoryType `json:"category" form:"category" binding:"required,oneof=classic sparkling smoothies tea powders ice_cream other appetizers main_course desserts snacks food pastry" gorm:"not null"`
 	Description string             `json:"description" form:"description"`
 	IsAvailable bool               `json:"isAvailable" form:"is_available" binding:"required" gorm:"not null"`
 }
@@ -26,7 +26,7 @@ type ProductCreateRequest struct {
 type ProductUpdateRequest struct {
 	Name        string             `json:"name" form:"name" binding:"required" gorm:"not null"`
 	Price       uint               `json:"price" form:"price" binding:"required" gorm:"not null"`
-	Category    enums.CategoryType `json:"category" form:"category" binding:"required" gorm:"not null"`
+	Category    enums.CategoryType `json:"category" form:"category" binding:"required,oneof=classic sparkling smoothies tea powders ice_cream other appetizers main_course desserts snacks food pastry" gorm:"not null"`
 	Description string             `json:"description" form:"description"`
 	IsAvailable bool               `json:"isAvailable" form:"is_available"`
 }
