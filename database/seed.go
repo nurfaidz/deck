@@ -44,16 +44,9 @@ func SeedProducts() {
 	productsToSeed := []models.Product{
 		{
 			Name:        "Kopi Lampung",
-			Category:    enums.Classic,
+			Category:    enums.MainCourse,
 			Description: "Kopi Lampung adalah kopi robusta yang terkenal dengan cita rasa yang kuat dan aroma yang khas. Ditanam di dataran tinggi Lampung, kopi ini memiliki keasaman rendah dan body yang tebal.",
 			Price:       50000,
-			IsAvailable: true,
-		},
-		{
-			Name:        "Kopi Aceh Gayo",
-			Category:    enums.Classic,
-			Description: "Kopi Aceh Gayo adalah kopi arabika yang ditanam di dataran tinggi Gayo, Aceh. Dikenal dengan cita rasa yang kompleks, kopi ini memiliki aroma floral dan fruity yang khas.",
-			Price:       60000,
 			IsAvailable: true,
 		},
 		{
@@ -65,7 +58,7 @@ func SeedProducts() {
 		},
 		{
 			Name:        "Teh Kampleng",
-			Category:    enums.Tea,
+			Category:    enums.MainCourse,
 			Description: "Teh Kampleng adalah teh herbal tradisional yang terbuat dari kamplengan tangan. Dikenal dengan manfaat kesehatan yang baik, teh ini memiliki rasa yang segar dan menantang.",
 			Price:       20000,
 			IsAvailable: true,

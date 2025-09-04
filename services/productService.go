@@ -103,7 +103,7 @@ func (ps *ProductService) CreateProduct(req *structs.ProductCreateRequest, file 
 	}
 
 	validCategories := []enums.CategoryType{
-		enums.Classic, enums.Sparkling, enums.Smoothies, enums.Tea, enums.IceCream, enums.Powders, enums.Other, enums.Appetizers, enums.MainCourse, enums.Desserts, enums.Snacks, enums.Food, enums.Pastry,
+		enums.Other, enums.Appetizers, enums.MainCourse, enums.Desserts, enums.Snacks, enums.Food, enums.Pastry,
 	}
 
 	isValidCategory := false
